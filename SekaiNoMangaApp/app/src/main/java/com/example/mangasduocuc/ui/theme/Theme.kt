@@ -11,15 +11,25 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 
 private val DarkColorScheme = darkColorScheme(
-    primary = Purple80,
-    secondary = PurpleGrey80,
-    tertiary = Pink80
+    primary = PrimaryDarkColor,
+    secondary = SecondaryDarkColor,
+    background = BackgroundDarkColor,
+    surface = SurfaceDarkColor,
+    onPrimary = OnPrimaryColor,
+    onSecondary = OnSecondaryColor,
+    onBackground = OnBackgroundColor,
+    onSurface = OnSurfaceColor,
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = Purple40,
-    secondary = PurpleGrey40,
-    tertiary = Pink40
+    primary = PrimaryColor,
+    secondary = SecondaryColor,
+    background = BackgroundColor,
+    surface = SurfaceColor,
+    onPrimary = OnPrimaryColor,
+    onSecondary = OnSecondaryColor,
+    onBackground = OnBackgroundColor,
+    onSurface = OnSurfaceColor,
 )
 
 @Composable
@@ -33,7 +43,6 @@ fun MangasDuocTheme(
             val context = LocalContext.current
             if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         }
-
         darkTheme -> DarkColorScheme
         else -> LightColorScheme
     }

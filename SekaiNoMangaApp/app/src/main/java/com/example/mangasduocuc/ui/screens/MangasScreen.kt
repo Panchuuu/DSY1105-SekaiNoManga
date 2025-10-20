@@ -1,12 +1,19 @@
 package com.example.mangasduocuc.ui.screens
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Image
 import androidx.compose.material3.*
+import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -14,15 +21,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import coil.compose.AsyncImage
+import com.example.mangasduocuc.model.Manga
 import com.example.mangasduocuc.navigation.Route
 import com.example.mangasduocuc.viewmodel.MangasViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.compose.material3.windowsizeclass.WindowSizeClass
-import coil.compose.AsyncImage
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Image
 
 @Composable
 fun MangasScreen(
@@ -74,44 +78,67 @@ fun MangasScreen(
                         items(
                             items = mangas,
                             key = { it.id }
-                        ) { b ->
-                            ListItem(
-                                leadingContent = {
-                                    if (!b.coverUri.isNullOrBlank()) {
-                                        AsyncImage(
-                                            model = b.coverUri,
-                                            contentDescription = "Portada de ${b.title}",
-                                            contentScale = ContentScale.Crop,
-                                            modifier = Modifier
-                                                .size(56.dp)
-                                                .clip(RoundedCornerShape(10.dp))
-                                        )
-                                    } else {
-                                        Icon(
-                                            imageVector = Icons.Outlined.Image,
-                                            contentDescription = "Sin portada",
-                                            modifier = Modifier.size(56.dp)
-                                        )
-                                    }
-                                },
-                                headlineContent = {
-                                    Text(b.title, style = MaterialTheme.typography.titleMedium)
-                                },
-                                supportingContent = {
-                                    Text(b.author)
-                                },
-                                trailingContent = {
-                                    b.year?.let { y ->
-                                        Text(y.toString(), style = MaterialTheme.typography.labelLarge)
-                                    }
-                                },
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clickable { nav.navigate(Route.Details.of(b.id)) }
-                            )
-                            HorizontalDivider()
+                        ) { manga ->
+                            var visible by remember { mutableStateOf(false) }
+                            LaunchedEffect(Unit) { visible = true }
+
+                            AnimatedVisibility(
+                                visible = visible,
+                                enter = fadeIn(animationSpec = tween(durationMillis = 500))
+                            ) {
+                                MangaListItem(manga = manga) {
+                                    nav.navigate(Route.Details.of(manga.id))
+                                }
+                            }
                         }
                     }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun MangaListItem(manga: Manga, onClick: () -> Unit) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp)
+            .clickable(onClick = onClick),
+        shape = RoundedCornerShape(12.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+    ) {
+        Row(
+            modifier = Modifier.padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Portada del Manga
+            if (!manga.coverUri.isNullOrBlank()) {
+                AsyncImage(
+                    model = manga.coverUri,
+                    contentDescription = "Portada de ${manga.title}",
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .size(80.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                )
+            } else {
+                Icon(
+                    imageVector = Icons.Outlined.Image,
+                    contentDescription = "Sin portada",
+                    modifier = Modifier.size(80.dp)
+                )
+            }
+
+
+            Spacer(modifier = Modifier.width(16.dp))
+
+            // Información del Manga
+            Column {
+                Text(manga.title, style = MaterialTheme.typography.titleLarge)
+                Text(manga.author, style = MaterialTheme.typography.bodyMedium)
+                manga.year?.let {
+                    Text("Año: $it", style = MaterialTheme.typography.bodySmall)
                 }
             }
         }
