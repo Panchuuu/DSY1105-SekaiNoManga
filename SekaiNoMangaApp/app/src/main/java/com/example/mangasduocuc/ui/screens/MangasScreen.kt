@@ -4,6 +4,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -60,27 +61,19 @@ fun MangasScreen(
                 "loading" -> {
                     CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
                 }
+
                 "empty" -> {
-                    Column(
-                        modifier = Modifier.align(Alignment.Center),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text("Aún no hay mangas", style = MaterialTheme.typography.titleMedium)
-                        Spacer(Modifier.height(8.dp))
-                        Text(
-                            "Crea tu primer manga para comenzar.",
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-                        Spacer(Modifier.height(16.dp))
-                        Button(onClick = { nav.navigate(Route.Form.path) }) {
-                            Text("Crear primer manga")
-                        }
-                    }
+                    EmptyState(
+                        onCreate = { nav.navigate(Route.Form.path) },
+                        modifier = Modifier.align(Alignment.Center)
+                    )
                 }
+
                 else -> {
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),
-                        state = listState
+                        state = listState,
+                        contentPadding = PaddingValues(vertical = 4.dp)
                     ) {
                         items(
                             items = mangas,
@@ -100,7 +93,8 @@ fun MangasScreen(
                                         vm.deleteManga(idToDelete) { ok: Boolean ->
                                             scope.launch {
                                                 snackbarHostState.showSnackbar(
-                                                    if (ok) "Manga eliminado" else "No se pudo eliminar"
+                                                    if (ok) "Manga eliminado"
+                                                    else "No se pudo eliminar"
                                                 )
                                             }
                                         }
@@ -116,6 +110,33 @@ fun MangasScreen(
 }
 
 @Composable
+private fun EmptyState(
+    onCreate: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Icon(
+            imageVector = Icons.Outlined.Image,
+            contentDescription = null,
+            modifier = Modifier.size(48.dp),
+            tint = MaterialTheme.colorScheme.outline
+        )
+        Spacer(Modifier.height(8.dp))
+        Text("Aún no hay mangas", style = MaterialTheme.typography.titleMedium)
+        Text(
+            "Crea tu primer manga para comenzar.",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Spacer(Modifier.height(16.dp))
+        Button(onClick = onCreate) { Text("Crear primer manga") }
+    }
+}
+
+@Composable
 private fun MangaListItem(
     manga: Manga,
     onClick: () -> Unit,
@@ -126,56 +147,71 @@ private fun MangaListItem(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp)
+            .padding(vertical = 6.dp)
             .clickable(onClick = onClick),
-        shape = RoundedCornerShape(12.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        shape = RoundedCornerShape(14.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.15f))
     ) {
         Row(
             modifier = Modifier.padding(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Portada del Manga
+
             if (!manga.coverUri.isNullOrBlank()) {
                 AsyncImage(
                     model = manga.coverUri,
                     contentDescription = "Portada de ${manga.title}",
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
-                        .size(80.dp)
-                        .clip(RoundedCornerShape(8.dp))
+                        .size(72.dp)
+                        .clip(RoundedCornerShape(10.dp))
                 )
             } else {
                 Icon(
                     imageVector = Icons.Outlined.Image,
                     contentDescription = "Sin portada",
-                    modifier = Modifier.size(80.dp)
+                    modifier = Modifier
+                        .size(72.dp)
+                        .clip(RoundedCornerShape(10.dp)),
+                    tint = MaterialTheme.colorScheme.outline
                 )
             }
 
-            Spacer(modifier = Modifier.width(16.dp))
+            Spacer(Modifier.width(14.dp))
 
-            // Información del Manga
             Column(Modifier.weight(1f)) {
                 Text(
                     manga.title,
-                    style = MaterialTheme.typography.titleLarge,
+                    style = MaterialTheme.typography.titleMedium,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
-                manga.author?.let {
-                    Text(it, style = MaterialTheme.typography.bodyMedium)
-                }
-                manga.year?.let {
-                    Text("Año: $it", style = MaterialTheme.typography.bodySmall)
+
+
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    manga.author?.takeIf { it.isNotBlank() }?.let {
+                        AssistChip(
+                            onClick = {},
+                            label = { Text(it) }
+                        )
+                    }
+                    manga.year?.let {
+                        AssistChip(
+                            onClick = {},
+                            label = { Text("Año $it") }
+                        )
+                    }
                 }
             }
 
-            // Acción borrar
+
             IconButton(onClick = { showConfirm = true }) {
                 Icon(
                     imageVector = Icons.Filled.Delete,
-                    contentDescription = "Eliminar"
+                    contentDescription = "Eliminar",
+                    tint = MaterialTheme.colorScheme.error
                 )
             }
         }
@@ -185,12 +221,18 @@ private fun MangaListItem(
         AlertDialog(
             onDismissRequest = { showConfirm = false },
             title = { Text("Eliminar manga") },
-            text = { Text("¿Seguro que deseas eliminar \"${manga.title}\"? Esta acción no se puede deshacer.") },
+            text = { Text("¿Seguro que deseas eliminar \"${manga.title}\"?") },
             confirmButton = {
-                TextButton(onClick = {
-                    showConfirm = false
-                    onDelete(manga.id)
-                }) { Text("Eliminar") }
+                Button(
+                    onClick = {
+                        showConfirm = false
+                        onDelete(manga.id)
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.errorContainer,
+                        contentColor = MaterialTheme.colorScheme.onErrorContainer
+                    )
+                ) { Text("Eliminar") }
             },
             dismissButton = {
                 TextButton(onClick = { showConfirm = false }) { Text("Cancelar") }
