@@ -11,6 +11,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.outlined.Image
 import androidx.compose.material3.*
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
@@ -19,6 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -27,6 +29,7 @@ import coil.compose.AsyncImage
 import com.example.mangasduocuc.model.Manga
 import com.example.mangasduocuc.navigation.Route
 import com.example.mangasduocuc.viewmodel.MangasViewModel
+import kotlinx.coroutines.launch
 
 @Composable
 fun MangasScreen(
@@ -45,6 +48,7 @@ fun MangasScreen(
     }
 
     val listState = rememberLazyListState()
+    val scope = rememberCoroutineScope()
 
     Box(
         modifier = Modifier
@@ -63,7 +67,10 @@ fun MangasScreen(
                     ) {
                         Text("Aún no hay mangas", style = MaterialTheme.typography.titleMedium)
                         Spacer(Modifier.height(8.dp))
-                        Text("Crea tu primer manga para comenzar.", style = MaterialTheme.typography.bodyMedium)
+                        Text(
+                            "Crea tu primer manga para comenzar.",
+                            style = MaterialTheme.typography.bodyMedium
+                        )
                         Spacer(Modifier.height(16.dp))
                         Button(onClick = { nav.navigate(Route.Form.path) }) {
                             Text("Crear primer manga")
@@ -86,9 +93,19 @@ fun MangasScreen(
                                 visible = visible,
                                 enter = fadeIn(animationSpec = tween(durationMillis = 500))
                             ) {
-                                MangaListItem(manga = manga) {
-                                    nav.navigate(Route.Details.of(manga.id))
-                                }
+                                MangaListItem(
+                                    manga = manga,
+                                    onClick = { nav.navigate(Route.Details.of(manga.id)) },
+                                    onDelete = { idToDelete ->
+                                        vm.deleteManga(idToDelete) { ok: Boolean ->
+                                            scope.launch {
+                                                snackbarHostState.showSnackbar(
+                                                    if (ok) "Manga eliminado" else "No se pudo eliminar"
+                                                )
+                                            }
+                                        }
+                                    }
+                                )
                             }
                         }
                     }
@@ -99,7 +116,13 @@ fun MangasScreen(
 }
 
 @Composable
-fun MangaListItem(manga: Manga, onClick: () -> Unit) {
+private fun MangaListItem(
+    manga: Manga,
+    onClick: () -> Unit,
+    onDelete: (String) -> Unit
+) {
+    var showConfirm by remember { mutableStateOf(false) }
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -130,17 +153,48 @@ fun MangaListItem(manga: Manga, onClick: () -> Unit) {
                 )
             }
 
-
             Spacer(modifier = Modifier.width(16.dp))
 
             // Información del Manga
-            Column {
-                Text(manga.title, style = MaterialTheme.typography.titleLarge)
-                Text(manga.author, style = MaterialTheme.typography.bodyMedium)
+            Column(Modifier.weight(1f)) {
+                Text(
+                    manga.title,
+                    style = MaterialTheme.typography.titleLarge,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                manga.author?.let {
+                    Text(it, style = MaterialTheme.typography.bodyMedium)
+                }
                 manga.year?.let {
                     Text("Año: $it", style = MaterialTheme.typography.bodySmall)
                 }
             }
+
+            // Acción borrar
+            IconButton(onClick = { showConfirm = true }) {
+                Icon(
+                    imageVector = Icons.Filled.Delete,
+                    contentDescription = "Eliminar"
+                )
+            }
         }
+    }
+
+    if (showConfirm) {
+        AlertDialog(
+            onDismissRequest = { showConfirm = false },
+            title = { Text("Eliminar manga") },
+            text = { Text("¿Seguro que deseas eliminar \"${manga.title}\"? Esta acción no se puede deshacer.") },
+            confirmButton = {
+                TextButton(onClick = {
+                    showConfirm = false
+                    onDelete(manga.id)
+                }) { Text("Eliminar") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showConfirm = false }) { Text("Cancelar") }
+            }
+        )
     }
 }
