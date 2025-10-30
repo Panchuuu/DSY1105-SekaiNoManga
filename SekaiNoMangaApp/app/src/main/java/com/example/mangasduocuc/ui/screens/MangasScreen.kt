@@ -9,6 +9,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.outlined.Image
 import androidx.compose.material3.*
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
@@ -28,6 +29,7 @@ import com.example.mangasduocuc.navigation.Route
 import com.example.mangasduocuc.ui.theme.InkBlack
 import com.example.mangasduocuc.ui.theme.LightGray
 import com.example.mangasduocuc.viewmodel.MangasViewModel
+import kotlinx.coroutines.launch
 
 @Composable
 fun MangasScreen(
@@ -38,6 +40,9 @@ fun MangasScreen(
 ) {
     val mangas by vm.mangas.collectAsStateWithLifecycle(initialValue = emptyList())
     val isLoading by vm.isLoading.collectAsStateWithLifecycle(initialValue = false)
+    val scope = rememberCoroutineScope()
+    var mangaToDelete by remember { mutableStateOf<Manga?>(null) }
+
 
     val uiState = when {
         isLoading -> "loading"
@@ -46,6 +51,35 @@ fun MangasScreen(
     }
 
     val listState = rememberLazyListState()
+
+    if (mangaToDelete != null) {
+        AlertDialog(
+            onDismissRequest = { mangaToDelete = null },
+            title = { Text("Confirmar Eliminación") },
+            text = { Text("¿Estás seguro de que quieres eliminar '${mangaToDelete?.title}'?") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        mangaToDelete?.let {
+                            vm.deleteManga(it.id) {
+                                scope.launch {
+                                    snackbarHostState.showSnackbar("Manga eliminado")
+                                }
+                            }
+                        }
+                        mangaToDelete = null
+                    }
+                ) {
+                    Text("Eliminar")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { mangaToDelete = null }) {
+                    Text("Cancelar")
+                }
+            }
+        )
+    }
 
     Box(
         modifier = Modifier
@@ -81,9 +115,15 @@ fun MangasScreen(
                             items = mangas,
                             key = { it.id }
                         ) { manga ->
-                            MangaListItem(manga = manga) {
-                                nav.navigate(Route.Details.of(manga.id))
-                            }
+                            MangaListItem(
+                                manga = manga,
+                                onClick = {
+                                    nav.navigate(Route.Details.of(manga.id))
+                                },
+                                onDelete = {
+                                    mangaToDelete = manga
+                                }
+                            )
                         }
                     }
                 }
@@ -93,7 +133,7 @@ fun MangasScreen(
 }
 
 @Composable
-fun MangaListItem(manga: Manga, onClick: () -> Unit) {
+fun MangaListItem(manga: Manga, onClick: () -> Unit, onDelete: () -> Unit) {
     OutlinedCard(
         modifier = Modifier
             .fillMaxWidth()
@@ -115,8 +155,9 @@ fun MangaListItem(manga: Manga, onClick: () -> Unit) {
                 }
             }
 
-            Spacer(modifier = Modifier.width(12.dp))
-
+            IconButton(onClick = onDelete) {
+                Icon(Icons.Default.Delete, contentDescription = "Eliminar Manga")
+            }
             // Portada del Manga
             Box(
                 modifier = Modifier

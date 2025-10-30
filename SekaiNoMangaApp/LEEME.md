@@ -2,7 +2,6 @@ Sekai no Manga (Android) — DSY1105
 
 Aplicación Android para gestionar una colección de mangas: crear, listar, ver detalle y eliminar. Construida con Jetpack Compose, MVVM, Room, Coroutines/Flow y una DI simple mediante RepositoryProvider.
 
-
 Funcionalidades
 
 Listado de mangas con portada, título, autor y año.
@@ -29,12 +28,9 @@ Asincronía: Kotlin Coroutines + Flow/StateFlow
 
 DI simple: RepositoryProvider
 
-Imágenes: Coil 
- 
+![alt text](image.png)
 
-Estructura del proyecto
-<img width="624" height="589" alt="image" src="https://github.com/user-attachments/assets/25763e1f-4bcc-4d92-b156-4687b1ff5c0d" />
-
+Estructura del proyecto image
 
 🛠️ Requisitos
 
@@ -48,9 +44,7 @@ Cómo clonar, sincronizar y ejecutar
 
 Clonar
 
-git clone https://github.com/<tu-usuario>/DSY1105-SekaiNoManga.git
-cd DSY1105-SekaiNoManga/SekaiNoMangaApp
-
+git clone https://github.com//DSY1105-SekaiNoManga.git cd DSY1105-SekaiNoManga/SekaiNoMangaApp
 
 Abrir en Android Studio
 
@@ -82,14 +76,9 @@ Crea un emulador desde Device Manager o conecta tu teléfono con Depuración USB
 
 Run ▶ app.
 
-Arquitectura (MVVM + Repository)
-UI (Compose Screens)
-  ⤷ ViewModel (StateFlow, orquestación y validación)
-      ⤷ Repository (RoomMangasRepository / InMemoryMangasRepository)
-          ⤷ Room (MangaDao, AppDatabase, MangaEntity)
+Arquitectura (MVVM + Repository) UI (Compose Screens) ⤷ ViewModel (StateFlow, orquestación y validación) ⤷ Repository (RoomMangasRepository / InMemoryMangasRepository) ⤷ Room (MangaDao, AppDatabase, MangaEntity)
 
-
-UI: MangasScreen consume vm.mangas: StateFlow<List<Manga>> y dispara acciones (crear, navegar, eliminar).
+UI: MangasScreen consume vm.mangas: StateFlow<List> y dispara acciones (crear, navegar, eliminar).
 
 ViewModel: expone flujos, operaciones getMangaById, updateManga, addManga, deleteManga(id).
 
@@ -97,8 +86,7 @@ Repository: traduce String id ⇄ Long id y delega en MangaDao.
 
 Room: @Dao con observeAll(), getById, insert, update, @Query("DELETE FROM mangas WHERE id = :id").
 
-Uso de la app
-Agregar un manga
+Uso de la app Agregar un manga
 
 En la lista, pulsa “Crear primer manga” (si está vacía) o navega al Form.
 
@@ -118,7 +106,7 @@ Desde la lista (MangasScreen.kt): botón 🗑️ → confirmación → snackbar 
 
 La UI no conoce Room. Solo llama vm.deleteManga(id). El Flow del repo emite la nueva lista; StateFlow del VM actualiza la pantalla sin lógica extra.
 
- Comprobar que el borrado funciona (Database Inspector)
+Comprobar que el borrado funciona (Database Inspector)
 
 Con la app corriendo, abre App Inspection → Database Inspector.
 

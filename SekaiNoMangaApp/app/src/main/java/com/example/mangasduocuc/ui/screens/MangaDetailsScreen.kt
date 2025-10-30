@@ -7,6 +7,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.outlined.Image
 import androidx.compose.material3.*
@@ -34,6 +35,7 @@ fun MangaDetailsScreen(
     vm: MangasViewModel = viewModel(factory = MangasViewModel.factory())
 ) {
     val scope = rememberCoroutineScope()
+    var showDeleteDialog by remember { mutableStateOf(false) }
 
     var title by remember { mutableStateOf<String?>(null) }
     var author by remember { mutableStateOf<String?>(null) }
@@ -51,6 +53,34 @@ fun MangaDetailsScreen(
             year = b.year
             coverUri = b.coverUri
         }
+    }
+
+    if (showDeleteDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteDialog = false },
+            title = { Text("Confirmar Eliminación") },
+            text = { Text("¿Estás seguro de que quieres eliminar este manga?") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showDeleteDialog = false
+                        vm.deleteManga(id) {
+                            scope.launch {
+                                snackbarHostState.showSnackbar("Manga eliminado con éxito")
+                            }
+                            nav.popBackStack()
+                        }
+                    }
+                ) {
+                    Text("Eliminar")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteDialog = false }) {
+                    Text("Cancelar")
+                }
+            }
+        )
     }
 
     Box(
@@ -133,12 +163,22 @@ fun MangaDetailsScreen(
                         Text("Editar")
                     }
                     OutlinedButton(
-                        onClick = { nav.popBackStack() },
+                        onClick = { showDeleteDialog = true },
                         shape = RoundedCornerShape(8.dp),
-                        border = BorderStroke(1.dp, LightGray)
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error)
                     ) {
-                        Text("Volver")
+                        Icon(Icons.Default.Delete, contentDescription = "Eliminar")
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Eliminar")
                     }
+                }
+                Spacer(Modifier.height(8.dp))
+                OutlinedButton(
+                    onClick = { nav.popBackStack() },
+                    shape = RoundedCornerShape(8.dp),
+                    border = BorderStroke(1.dp, LightGray)
+                ) {
+                    Text("Volver")
                 }
             }
         }
