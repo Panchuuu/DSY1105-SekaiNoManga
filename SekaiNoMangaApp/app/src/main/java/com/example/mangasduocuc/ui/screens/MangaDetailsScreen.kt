@@ -1,5 +1,6 @@
 package com.example.mangasduocuc.ui.screens
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -13,13 +14,15 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import com.example.mangasduocuc.navigation.Route
+import com.example.mangasduocuc.ui.theme.LightGray
 import com.example.mangasduocuc.viewmodel.MangasViewModel
 import kotlinx.coroutines.launch
 
@@ -51,21 +54,26 @@ fun MangaDetailsScreen(
     }
 
     Box(
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
     ) {
-        if (title == null && author == null) {
+        if (title == null) {
             CircularProgressIndicator(Modifier.align(Alignment.Center))
         } else {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .verticalScroll(rememberScrollState())
+                    .verticalScroll(rememberScrollState()),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // Imagen de portada como cabecera
-                Box(
+                // Portada del manga
+                Card(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .height(300.dp)
+                        .fillMaxWidth(0.7f)
+                        .aspectRatio(3f / 4f),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+                    shape = RoundedCornerShape(8.dp)
                 ) {
                     if (!coverUri.isNullOrBlank()) {
                         AsyncImage(
@@ -78,64 +86,58 @@ fun MangaDetailsScreen(
                         Box(
                             modifier = Modifier
                                 .fillMaxSize()
-                                .background(Color.Gray),
+                                .background(LightGray),
                             contentAlignment = Alignment.Center
                         ) {
-                            Icon(
-                                imageVector = Icons.Outlined.Image,
-                                contentDescription = "Sin portada",
-                                modifier = Modifier.size(64.dp)
-                            )
+                            Icon(Icons.Outlined.Image, contentDescription = "Sin portada", modifier = Modifier.size(50.dp))
                         }
                     }
+                }
 
-                    // Gradiente para que el texto sea legible
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(
-                                brush = Brush.verticalGradient(
-                                    colors = listOf(Color.Transparent, Color.Black),
-                                    startY = 300f
-                                )
-                            )
-                    )
-                    // Título sobre la imagen
+                Spacer(Modifier.height(24.dp))
+
+                // Título y autor
+                Text(
+                    text = title ?: "-",
+                    style = MaterialTheme.typography.headlineMedium,
+                    textAlign = TextAlign.Center
+                )
+                Text(
+                    text = "por ${author ?: "-"}",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                )
+
+                year?.let {
                     Text(
-                        text = title ?: "-",
-                        style = MaterialTheme.typography.headlineMedium.copy(color = Color.White),
-                        modifier = Modifier
-                            .align(Alignment.BottomStart)
-                            .padding(16.dp)
+                        text = "Publicado en $it",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.primary
                     )
                 }
 
-                // Resto de la información
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Text(
-                        text = "Autor: ${author ?: "-"}",
-                        style = MaterialTheme.typography.titleMedium
-                    )
-                    year?.let {
-                        Spacer(Modifier.height(4.dp))
-                        Text(
-                            text = "Año: $it",
-                            style = MaterialTheme.typography.bodyMedium
-                        )
+                Divider(
+                    modifier = Modifier.padding(vertical = 24.dp),
+                    thickness = 1.dp,
+                    color = LightGray
+                )
+
+                // Botones
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Button(
+                        onClick = { nav.navigate(Route.Form.edit(id)) },
+                        shape = RoundedCornerShape(8.dp)
+                    ) {
+                        Icon(Icons.Default.Edit, contentDescription = "Editar")
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Editar")
                     }
-
-                    Spacer(Modifier.height(20.dp))
-
-                    // Botones
-                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                        Button(onClick = { /* Lógica para editar (puedes implementarla más adelante) */ }) {
-                            Icon(Icons.Default.Edit, contentDescription = "Editar")
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text("Editar")
-                        }
-                        OutlinedButton(onClick = { nav.popBackStack() }) {
-                            Text("Volver")
-                        }
+                    OutlinedButton(
+                        onClick = { nav.popBackStack() },
+                        shape = RoundedCornerShape(8.dp),
+                        border = BorderStroke(1.dp, LightGray)
+                    ) {
+                        Text("Volver")
                     }
                 }
             }

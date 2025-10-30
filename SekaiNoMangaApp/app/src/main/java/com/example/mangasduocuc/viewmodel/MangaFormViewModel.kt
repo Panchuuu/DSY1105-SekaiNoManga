@@ -14,6 +14,7 @@ import kotlinx.coroutines.launch
 import java.time.Year
 
 data class MangaFormUiState(
+    val id: String? = null, // Guardamos el ID para saber si es edición
     val title: String = "",
     val author: String = "",
     val year: String = "",
@@ -26,11 +27,36 @@ data class MangaFormUiState(
 )
 
 class MangaFormViewModel(
-    private val repo: MangasRepository
+    private val repo: MangasRepository,
+    private val mangaId: String?
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(MangaFormUiState())
     val uiState: StateFlow<MangaFormUiState> = _uiState.asStateFlow()
+
+    init {
+        if (mangaId != null) {
+            loadManga(mangaId)
+        }
+    }
+
+    private fun loadManga(id: String) {
+        viewModelScope.launch {
+            val manga = repo.getById(id)
+            if (manga != null) {
+                _uiState.update {
+                    it.copy(
+                        id = manga.id,
+                        title = manga.title,
+                        author = manga.author,
+                        year = manga.year?.toString() ?: "",
+                        coverUri = manga.coverUri
+                    )
+                }
+                validate()
+            }
+        }
+    }
 
     fun onTitleChange(value: String) {
         _uiState.update { it.copy(title = value, isDirty = true) }
@@ -96,7 +122,7 @@ class MangaFormViewModel(
         return if (yr in min..max) null else "Debe estar entre $min y $max"
     }
 
-    fun submit(onInserted: (String) -> Unit, onError: (String) -> Unit) {
+    fun submit(onSuccess: (String) -> Unit, onError: (String) -> Unit) {
         val s = _uiState.value
         if (!s.isValid || s.isSaving) return
 
@@ -106,17 +132,23 @@ class MangaFormViewModel(
             try {
                 val yearInt = s.year.toIntOrNull()
                 val manga = Manga(
-                    id = "",
+                    id = s.id ?: "",
                     title = s.title.trim(),
                     author = s.author.trim(),
                     year = yearInt,
                     coverUri = s.coverUri
                 )
-                val id = repo.insert(manga)
-                _uiState.update { it.copy(isSaving = false) }
-                onInserted(id)
 
-                _uiState.value = MangaFormUiState()
+                if (s.id == null) {
+                    // Crear nuevo manga
+                    val newId = repo.insert(manga)
+                    onSuccess(newId)
+                } else {
+                    repo.update(manga)
+                    onSuccess(s.id)
+                }
+
+                _uiState.update { it.copy(isSaving = false) }
 
             } catch (e: Exception) {
                 _uiState.update { it.copy(isSaving = false) }
@@ -126,11 +158,11 @@ class MangaFormViewModel(
     }
 
     companion object {
-        fun factory(): ViewModelProvider.Factory = object : ViewModelProvider.Factory {
+        fun factory(mangaId: String?): ViewModelProvider.Factory = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
                 val repo = RepositoryProvider.mangasRepository
-                return MangaFormViewModel(repo) as T
+                return MangaFormViewModel(repo, mangaId) as T
             }
         }
     }

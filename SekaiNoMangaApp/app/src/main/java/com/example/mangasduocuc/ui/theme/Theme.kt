@@ -8,34 +8,35 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 
 private val DarkColorScheme = darkColorScheme(
-    primary = PrimaryDarkColor,
-    secondary = SecondaryDarkColor,
-    background = BackgroundDarkColor,
-    surface = SurfaceDarkColor,
-    onPrimary = OnPrimaryColor,
-    onSecondary = OnSecondaryColor,
-    onBackground = OnBackgroundColor,
-    onSurface = OnSurfaceColor,
+    primary = AccentRed,
+    secondary = PaperWhite,
+    background = DarkBackground,
+    surface = DarkSurface,
+    onPrimary = Color.White,
+    onSecondary = InkBlack,
+    onBackground = PaperWhite,
+    onSurface = PaperWhite
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = PrimaryColor,
-    secondary = SecondaryColor,
-    background = BackgroundColor,
-    surface = SurfaceColor,
-    onPrimary = OnPrimaryColor,
-    onSecondary = OnSecondaryColor,
-    onBackground = OnBackgroundColor,
-    onSurface = OnSurfaceColor,
+    primary = AccentRed,
+    secondary = InkBlack,
+    background = PaperWhite,
+    surface = PaperWhite,
+    onPrimary = Color.White,
+    onSecondary = PaperWhite,
+    onBackground = InkBlack,
+    onSurface = InkBlack
 )
 
 @Composable
 fun MangasDuocTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    dynamicColor: Boolean = true,
+    dynamicColor: Boolean = false, // Desactivamos el color dinámico para forzar nuestro tema
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {
@@ -43,6 +44,7 @@ fun MangasDuocTheme(
             val context = LocalContext.current
             if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         }
+
         darkTheme -> DarkColorScheme
         else -> LightColorScheme
     }

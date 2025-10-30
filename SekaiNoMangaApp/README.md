@@ -1,114 +1,127 @@
-# Sekai No Manga Duoc UC
+Sekai no Manga (Android) — DSY1105
 
-Aplicación Android (Jetpack Compose) para gestionar mangas: listar, crear/editar y ver detalles, con almacenamiento local (Room), navegación Compose y acceso a cámara y dictado por voz.
-
-## Integrantes
-- Sebastian Lagos
-- Francisco Gaete
-- Sección: 012V / Profesor: Victor Andres Toledo Miranda
-
-## Contexto y objetivos
-La app resuelve la necesidad de registrar y consultar libros de forma offline con una UI simple y responsiva.
-
-## Tecnologías
-- Kotlin + Jetpack Compose (Material 3)
-- Navigation Compose
-- Room (persistencia local)
-- ViewModel + StateFlow (gestión de estado)
-- Coil (carga de imágenes)
-- Recursos nativos: Cámara (TakePicture + FileProvider), Micrófono (Speech-to-Text)
-
-## Arquitectura
-app/
-├─ data/local/ # Room (AppDatabase, BookDao, BookEntity, Mappers)
-├─ repository/ # BooksRepository, RoomBooksRepository
-├─ di/ # RepositoryProvider
-├─ model/ # Book
-├─ viewmodel/ # BooksViewModel, BookFormViewModel
-├─ ui/screens/ # BooksScreen, BookDetailsScreen, BookFormScreen, BookSummaryScreen
-├─ navigation/ # AppNav, Routes
-└─ res/xml/ # file_paths.xml (FileProvider)
-
-## Funcionalidades implementadas
-- **Navegación** entre lista ↔ detalle ↔ formulario (Compose Navigation).
-- **Formulario con validación** desacoplada en ViewModel (mensajes por campo).
-- **Animaciones** (`Crossfade`) en transición de estados.
-- **Persistencia local** (Room): crear, listar libros.
-- **Cámara**: captura de portada con `TakePicture()` y `FileProvider`.
-- **Dictado por voz** (micrófono) para descripción usando `RecognizerIntent`.
-
-## Requisitos de permisos
-En `AndroidManifest.xml`:
-- `android.permission.CAMERA`
-- `android.permission.RECORD_AUDIO`
-
-## Configuración y ejecución
-1. Android Studio Ladybug+ | Gradle 8.x | SDK 34
-2. Abrir el proyecto (`settings.gradle.kts`).
-3. Sincronizar Gradle.
-4. Ejecutar en emulador o dispositivo real (API 24+).
-
-## Pruebas
-- Alta/Baja/Modificación en Room.
-- Captura de imagen y visualización con Coil.
-- Dictado por voz para descripción.
-- Validaciones por campo (ver mensajes de error).
-
-## Planificación (Trello)
-- Tablero: https://trello.com/invite/b/68f194322685f980227a92ca/ATTIa9c94634523425810075804849fa9bedBF44324B/ev-parcial-2
-- Listas: Por hacer, En proceso, Hecho
-- Tareas asignadas a cada integrante.
-
-## Repositorio
-- GitHub: https://github.com/NicoCisternas1111/ProyectoAppsMoviles.git
---------------------------------------------------------------------
-
-1. Historia del Proyecto
-
-    La Biblioteca Duoc busca modernizar su sistema interno para permitir a estudiantes y docentes gestionar sus libros de manera más simple y accesible desde dispositivos móviles.
-    El proyecto tiene como objetivo ofrecer una aplicación intuitiva que funcione sin conexión a internet, permitiendo registrar, consultar y actualizar información de libros de forma ágil, además de aprovechar funciones nativas del teléfono como la cámara y el micrófono.
-
-2. Objetivos
-
-    -Digitalizar la gestión básica de libros desde una aplicación móvil.
-    -Reducir el uso de papel y mejorar la trazabilidad del inventario.
-    -Permitir que cualquier usuario pueda registrar nuevos libros fácilmente, incluyendo imágenes y descripciones por voz.
-
-3. Requisitos Funcionales
-
-   Código	Requisito	                Descripción
-   RF01	    Navegación funcional	    El usuario puede moverse entre la lista de libros, el detalle y el formulario de registro o edición.
-   RF02	    Gestión de libros (CRUD)	Permite crear, leer, actualizar y eliminar registros de libros almacenados localmente.
-   RF03	    Formulario validado	        Todos los campos (título, autor, descripción, etc.) se validan con mensajes visuales y texto de error.
-   RF04	    Persistencia local	        Los datos se almacenan mediante Room, asegurando funcionamiento sin conexión.
-   RF05	    Captura de imágenes	        Permite tomar una fotografía del libro o subirla desde la galería usando la cámara del dispositivo.
-   RF06	    Dictado por voz	            Usa el micrófono del teléfono para transcribir texto en el campo de descripción.
-   RF07	    Animaciones básicas	        Se integran transiciones suaves entre pantallas (Crossfade) para una experiencia fluida.
-
-4. Requisitos de Diseño
-
-   Tipo	                Especificación
-   Colores principales	Azul (#1565C0) para encabezados y botones; Blanco (#FFFFFF) para fondo; Gris claro (#F5F5F5) para tarjetas.
-   Tipografía	        Roboto (Google Fonts). Moderna, legible y nativa de Android.
-   Estilo visual	    Minimalista, limpio y enfocado en la legibilidad. Uso de tarjetas con sombras suaves y botones redondeados.
-   Diseño adaptable	    Interfaz optimizada para teléfonos y tablets, con tamaños ajustables según el ancho de pantalla.
-   Iconografía	        Uso de íconos Material Design (libro, cámara, micrófono, guardar, eliminar).
-   Animaciones	        Crossfade en transiciones y feedback visual en botones.
-
-5. Requisitos No Funcionales
-
-    -Compatibilidad: Android 7.0 (API 24) o superior.
-    -Modo offline: La aplicación debe operar sin conexión, sincronizando datos localmente.
-    -Usabilidad: Todos los campos deben ser comprensibles y estar acompañados de texto de ayuda.
-    -Seguridad: La app no solicita credenciales ni accede a datos personales fuera de las funciones nativas necesarias.
-
-6. Escenario de Uso
-
-    -El usuario abre la aplicación y visualiza la lista de libros almacenados.
-    -Desde el botón “+”, accede al formulario de registro.
-    -Puede tomar una foto del libro con la cámara o dictar la descripción por voz.
-    -Al guardar, el libro se almacena en la base local (Room) y aparece automáticamente en la lista.
-    -Desde la lista puede editar, eliminar o consultar los detalles de cualquier registro.
+Aplicación Android para gestionar una colección de mangas: crear, listar, ver detalle y eliminar. Construida con Jetpack Compose, MVVM, Room, Coroutines/Flow y una DI simple mediante RepositoryProvider.
 
 
---------------------------------------------------------------------
+Funcionalidades
+
+Listado de mangas con portada, título, autor y año.
+
+Crear y editar (formulario simple).
+
+Eliminar desde la lista (diálogo de confirmación) y snackbar de feedback.
+
+Estado vacío con CTA para crear el primer manga.
+
+UI en Material 3 con mejoras simples (chips autor/año, cards con borde y elevación).
+
+Persistencia local con Room; la lista reacciona automáticamente a los cambios (Flow → StateFlow).
+
+Stack Técnico
+
+UI: Jetpack Compose (Material 3)
+
+Arquitectura: MVVM + Repository
+
+Persistencia: Room (SQLite)
+
+Asincronía: Kotlin Coroutines + Flow/StateFlow
+
+DI simple: RepositoryProvider
+
+Imágenes: Coil 
+ 
+
+Estructura del proyecto
+<img width="624" height="589" alt="image" src="https://github.com/user-attachments/assets/25763e1f-4bcc-4d92-b156-4687b1ff5c0d" />
+
+
+🛠️ Requisitos
+
+Android Studio Jellyfish o superior
+
+JDK 17 (AGP 8.x lo requiere)
+
+Android SDK (API 33+ recomendado, vale 29+)
+
+Cómo clonar, sincronizar y ejecutar
+
+Clonar
+
+git clone https://github.com/<tu-usuario>/DSY1105-SekaiNoManga.git
+cd DSY1105-SekaiNoManga/SekaiNoMangaApp
+
+
+Abrir en Android Studio
+
+File → Open… y selecciona la carpeta SekaiNoMangaApp/.
+
+Confirma Trust Project.
+
+Configurar Gradle
+
+File → Settings → Build, Execution, Deployment → Gradle
+
+Use Gradle from: Gradle Wrapper
+
+Gradle JDK: 17
+
+Instalar SDK (si falta)
+
+Tools → SDK Manager → instala al menos una plataforma (Android 14/13).
+
+Initial Sync y Build
+
+File → Sync Project with Gradle Files
+
+Build → Rebuild Project
+
+Ejecutar
+
+Crea un emulador desde Device Manager o conecta tu teléfono con Depuración USB.
+
+Run ▶ app.
+
+Arquitectura (MVVM + Repository)
+UI (Compose Screens)
+  ⤷ ViewModel (StateFlow, orquestación y validación)
+      ⤷ Repository (RoomMangasRepository / InMemoryMangasRepository)
+          ⤷ Room (MangaDao, AppDatabase, MangaEntity)
+
+
+UI: MangasScreen consume vm.mangas: StateFlow<List<Manga>> y dispara acciones (crear, navegar, eliminar).
+
+ViewModel: expone flujos, operaciones getMangaById, updateManga, addManga, deleteManga(id).
+
+Repository: traduce String id ⇄ Long id y delega en MangaDao.
+
+Room: @Dao con observeAll(), getById, insert, update, @Query("DELETE FROM mangas WHERE id = :id").
+
+Uso de la app
+Agregar un manga
+
+En la lista, pulsa “Crear primer manga” (si está vacía) o navega al Form.
+
+Completa título, autor, año y opcionalmente portada (URI).
+
+Guardar. La lista se actualizará automáticamente.
+
+Ver detalle
+
+Tocar un ítem de la lista → MangaDetailsScreen.
+
+Eliminar un manga
+
+Desde la lista (MangasScreen.kt): botón 🗑️ → confirmación → snackbar “Manga eliminado”.
+
+(Opcional) Desde detalle: botón “Eliminar” con confirmación y popBackStack().
+
+La UI no conoce Room. Solo llama vm.deleteManga(id). El Flow del repo emite la nueva lista; StateFlow del VM actualiza la pantalla sin lógica extra.
+
+ Comprobar que el borrado funciona (Database Inspector)
+
+Con la app corriendo, abre App Inspection → Database Inspector.
+
+Selecciona tu proceso → abre la BD → tabla mangas.
+
+Elimina un ítem en la UI y pulsa Refresh: la fila debe desaparecer.
